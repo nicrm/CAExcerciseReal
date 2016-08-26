@@ -5,7 +5,6 @@
  */
 package modul1;
 
-import com.sun.xml.internal.ws.util.ByteArrayBuffer;
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
 import java.util.UUID;
