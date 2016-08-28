@@ -57,13 +57,13 @@ public class Sockets {
 //        }
         // UDP
         // Server
-        DatagramSocket datagramSocket = new java.net.DatagramSocket();
-        datagramSocket.bind(new InetSocketAddress("localhost", 8080));
-        datagramSocket.connect(new InetSocketAddress("localhost", 8080));
-        datagramSocket.send(new DatagramPacket("test".getBytes(), 10));
-        // Server
-        DatagramPacket newPacket = new DatagramPacket(new byte[100], 100);
-        datagramSocket.receive(newPacket);
+//        DatagramSocket datagramSocket = new java.net.DatagramSocket();
+//        datagramSocket.bind(new InetSocketAddress("localhost", 8080));
+//        datagramSocket.connect(new InetSocketAddress("localhost", 8080));
+//        datagramSocket.send(new DatagramPacket("test".getBytes(), 10));
+//        // Server
+//        DatagramPacket newPacket = new DatagramPacket(new byte[100], 100);
+//        datagramSocket.receive(newPacket);
     }
 
 }
