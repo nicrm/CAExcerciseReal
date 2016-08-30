@@ -2,3 +2,5 @@ build
 manifest.mf
 exercises
 /dist/
+/httpserver/target/
+/mavenproject1/target/
