@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import shared.Log;
@@ -57,10 +58,6 @@ public class EchoServer {
                 
             }
         });
-        
-        for (ClientHandler handler : clients) { 
-            handler.sendMessage(message); 
-        }
     }
 
     void removeHandler(ClientHandler handler) {
@@ -79,5 +76,9 @@ public class EchoServer {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+    
+    public List<ClientHandler> getClientList() {
+        return clients;
     }
 }
