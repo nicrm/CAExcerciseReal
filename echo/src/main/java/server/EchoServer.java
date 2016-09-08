@@ -1,14 +1,11 @@
 package server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,7 +13,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import shared.Log;
-import shared.ProtocolStrings;
 
 public class EchoServer {
 
@@ -42,9 +38,12 @@ public class EchoServer {
             do {
                 Socket socket = serverSocket.accept(); //Important Blocking call
                 System.out.println("Connected to a client");
-                ClientHandler clientHandler = ClientHandler.handle(socket, this);
+                ClientHandler clientHandler = 
+
+//                ClientHandler clientHandler = ClientHandler.handle(socket, this);
                 clients.add(clientHandler);
-                clientHandlers.submit(clientHandler);
+                new Thread(clientHandler).start();
+              //  clientHandlers.submit(clientHandler);
             } while (keepRunning);
         } catch (IOException ex) {
             Logger.getLogger(EchoServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -59,7 +58,17 @@ public class EchoServer {
             }
         });
     }
-
+    
+//   public String getClients (ArrayList<String> names) {
+//       StringBuilder sb  = new StringBuilder();
+//       for(String str: names){
+//           sb.append(str);
+   
+//    }
+//       String clientsNames = sb.toString();
+//       return clientsNames;
+//   }
+   
     void removeHandler(ClientHandler handler) {
         clients.remove(handler);
     }
@@ -78,7 +87,12 @@ public class EchoServer {
         }
     }
     
-    public List<ClientHandler> getClientList() {
+    public List<ClientHandler> getClientHandlers() {
         return clients;
     }
+
+    
+
+    
+    
 }

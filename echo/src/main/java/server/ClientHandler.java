@@ -8,6 +8,7 @@ package server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,20 +30,21 @@ public class ClientHandler implements Runnable {
     private final Scanner input;
     private String name;
     private static boolean loggedIn = false;
+    
 
-    public ClientHandler(Socket socket, Scanner input, PrintWriter writer, EchoServer server) {
+    public ClientHandler(Socket socket, EchoServer server) throws IOException {
         this.socket = socket;
-        this.writer = writer;
+        this.writer = new PrintWriter(socket.getOutputStream());
         this.server = server;
-        this.input = input;
+        this.input = new Scanner(socket.getInputStream());
     }
-
+/*
     public static ClientHandler handle(Socket socket, EchoServer server) throws IOException {
         Scanner input = new Scanner(socket.getInputStream());
         PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
         return new ClientHandler(socket, input, writer, server);
     }
-
+*/
     public void run() {
         try {
             while (true) {
@@ -51,46 +53,53 @@ public class ClientHandler implements Runnable {
                 System.out.println("Received: " + message);
 
                 if (!loggedIn) {
-                    if (msg[0].equals("LOGIN")) {
+                    if (msg[0].equals(ProtocolStrings.LOGIN)) {
                         loggedIn = true;
                         name = msg[1];
-                    } else {
-                        break;
+                        printClientList();
                     }
                 } else {
 
                     switch (msg[0]) {
                         case "MSG":
-                            if (msg[1].equals("")) {
+                            if (msg[0].equals(ProtocolStrings.MSG) && (msg[1].equals(""))) {
                                 server.sendMulticast(msg[2]);
                             } else {
-                                String[] recievers = msg[1].split(",");
-                                for (ClientHandler client : server.getClientList()) {
-                                    for (String name : recievers) {
-                                        if (client.getName().equals(name)) {
-                                            sendMessage(msg[2]);
+                                String[] users = msg[1].split(",");
+                                for (ClientHandler client : server.getClientHandlers()) {
+                                    for (String user : users) {
+                                        if(client.getName().equals(user)){
+                                            client.sendMessage(msg[2]);
                                         }
                                     }
                                 }
                             }
                             break;
                         case "LOGOUT":
-                            try {
-                                writer.println(ProtocolStrings.STOP);//Echo the stop message back to the client for a nice closedown
-                                socket.close();
-                            } catch (IOException ex) {
-                                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            if (msg[0].equals(ProtocolStrings.LOGOUT)) {
+                                try {
+                                    writer.println(ProtocolStrings.STOP);//Echo the stop message back to the client for a nice closedown
+                                    socket.close();
+
+                                } catch (IOException ex) {
+                                    Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                             break;
+                        default: { 
+                    System.out.println("    default    ");
                     }
+                    
                 }
+                }
+                
             }
 
         } finally {
             try {
-                writer.println(ProtocolStrings.STOP);//Echo the stop message back to the client for a nice closedown
-                socket.close();
-                server.removeHandler(this);
+               writer.println(ProtocolStrings.STOP);//Echo the stop message back to the client for a nice closedown
+               socket.close();
+               server.removeHandler(this);
                 System.out.println("Closed a Connection");
             } catch (IOException ex) {
                 Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -104,8 +113,23 @@ public class ClientHandler implements Runnable {
         writer.flush();
     }
 
+    public void printClientList() {
+        String clientList = "";
+
+        for (ClientHandler c : server.getClientHandlers()) {
+            if (c.getName()!= null)
+                clientList = clientList.concat(c.getName() + ",");
+        }
+        clientList = clientList.substring(0, clientList.length() - 1);
+
+        server.sendMulticast("CLIENTLIST:" + String.join(",", clientList));
+}
     public String getName() {
         return name;
+    }
+
+    public EchoServer getServer() {
+        return server;
     }
 
 }
